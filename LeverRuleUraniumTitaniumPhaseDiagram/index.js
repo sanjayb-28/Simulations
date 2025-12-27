@@ -7,10 +7,10 @@ window.g = {
     pointT: 720,  // Temperature in °C (600 to 925)
 
     // Graph edges
-    lx: 75,
-    rx: 475,
-    by: 440,
-    ty: 50,
+    lx: 70,
+    rx: 530,
+    by: 490,
+    ty: 40,
 
     // For moving the dot around
     radius: 5,
@@ -18,14 +18,15 @@ window.g = {
     dragPoint: null,
 
     // Colors for phases
-    liquid: [200, 0, 0],      // Red for liquid
-    solidTi: [64, 110, 209],  // Blue for Ti(s)
-    solidTiU2: [153, 186, 92],// Green for TiU2(s)
-    solidU: [165, 42, 42],    // Brown for U(s)
+    liquid: "#ff00ff",      // Magenta for liquid
+    solidTi: "#0000ff",     // Blue for Ti(s)
+    solidTiU2: "#008700ff",   // Green for TiU2(s)
+    solidU: "#ff8400ee",      // Orange for U(s)
+    pointColor: "#800080",  // Dark purple for the tracked point
 }
 
 function setup(){
-    g.cnv = createCanvas(700,500);
+    g.cnv = createCanvas(750,580);
     g.cnv.parent("graphics-wrapper");
     try { document.getElementsByTagName("main")[0].remove(); } catch(e) {}
     // Initialize point at (0.5, 720°C) mapped to canvas coordinates

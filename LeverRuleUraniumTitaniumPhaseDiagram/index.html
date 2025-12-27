@@ -43,17 +43,21 @@
             </div>
         </div>
             
-        <div style="display: grid; grid-template-columns: max-content 160px max-content max-content 160px max-content; gap: 10px; align-items: center; justify-items: start; margin-top: 10px;">
-            <div class="input-label" style="align-self: center;">uranium mole fraction</div>
-            <input type="range" id="uranium-slider" min="0" max="1" value="0.5" step="0.01" style="width: 160px; margin: 0; align-self: center;"/>
-            <div id="uranium-value" class="value-label" style="align-self: center;">0.50</div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 10px;">
+            <div style="display: grid; grid-template-columns: 180px 300px 50px; gap: 10px; align-items: center;">
+                <div class="input-label" style="text-align: right;">uranium mole fraction</div>
+                <input type="range" id="uranium-slider" min="0" max="1" value="0.5" step="0.01" style="width: 300px; margin: 0;"/>
+                <div id="uranium-value" class="value-label">0.50</div>
+            </div>
             
-            <div class="input-label" id="slider-label" style="align-self: center;">temperature (°C)</div>
-            <input type="range" id="temp-slider" min="600" max="925" value="720" step="1" style="width: 160px; margin: 0; align-self: center;"/>
-            <div id="temp-value" class="value-label" style="align-self: center;">720</div>
+            <div style="display: grid; grid-template-columns: 180px 300px 50px; gap: 10px; align-items: center;">
+                <div class="input-label" id="slider-label" style="text-align: right;">temperature (°C)</div>
+                <input type="range" id="temp-slider" min="600" max="925" value="720" step="1" style="width: 300px; margin: 0;"/>
+                <div id="temp-value" class="value-label">720</div>
+            </div>
         </div>
 
-        <div id="graphics-wrapper">
+        <div id="graphics-wrapper" style="margin-top: 30px;">
 
         </div>
 
@@ -111,7 +115,7 @@
         <div class="modal-body">
           <p>
             This simulation was created in the <a href="https://www.colorado.edu/chbe" target="_blank">Department of Chemical and Biological Engineering</a> at University of Colorado Boulder for <a
-              href="http://www.learncheme.com" target="_blank">LearnChemE.com</a> by xxxxx under the direction of Professor John L. Falconer and Michelle Medlin. It is a JavaScript/HTML5 implementation of a Mathematica simulation that was created by Lisa M. Goss and modified by Rachael L. Baumann. It was prepared with financial support from the National Science Foundation (DUE 2336987 and 2336988) in collaboration with Washington State University. Address any questions or comments to LearnChemE@gmail.com.
+              href="http://www.learncheme.com" target="_blank">LearnChemE.com</a> by Sanjay Baskaran under the direction of Professor John L. Falconer and Michelle Medlin. It is a JavaScript/HTML5 implementation of a Mathematica simulation that was created by Lisa M. Goss and modified by Rachael L. Baumann. It was prepared with financial support from the National Science Foundation (DUE 2336987 and 2336988) in collaboration with Washington State University. Address any questions or comments to LearnChemE@gmail.com.
           </p>
         </div>
       </div>

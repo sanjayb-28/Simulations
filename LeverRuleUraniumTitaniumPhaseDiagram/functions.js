@@ -46,44 +46,51 @@ function drawPhaseDiagram() {
     noFill();
     rect(g.lx, g.ty, g.rx - g.lx, g.by - g.ty);
     
-    // Draw phase boundaries
+    // Draw phase boundaries - draw as continuous paths to ensure proper connections
     stroke(0);
     strokeWeight(2);
     noFill();
     
-    // pb1: Ti solid to e1 (liquidus from Ti)
+    // Draw complete liquidus curve as one continuous path
     beginShape();
-    for(let x = 0; x <= e1x; x += 0.01) {
+    // pb1: Ti solid to e1 (liquidus from Ti)
+    for(let x = 0; x <= e1x; x += 0.005) {
         let T = phaseBoundary(0, pureTiT, e1x, e1T, x);
         let px = map(x, 0, 1, g.lx, g.rx);
         let py = map(T, 600, 925, g.by, g.ty);
         vertex(px, py);
     }
-    endShape();
+    // Ensure e1 point is exact
+    let e1px = map(e1x, 0, 1, g.lx, g.rx);
+    let e1py = map(e1T, 600, 925, g.by, g.ty);
+    vertex(e1px, e1py);
     
     // pb2: e1 to TiU2 (liquidus)
-    beginShape();
-    for(let x = e1x; x <= pureTiU2x; x += 0.01) {
+    for(let x = e1x; x <= pureTiU2x; x += 0.005) {
         let T = phaseBoundary(e1x, e1T, pureTiU2x, pureTiU2T, x);
         let px = map(x, 0, 1, g.lx, g.rx);
         let py = map(T, 600, 925, g.by, g.ty);
         vertex(px, py);
     }
-    endShape();
+    // Ensure TiU2 point is exact
+    let TiU2px = map(pureTiU2x, 0, 1, g.lx, g.rx);
+    let TiU2py = map(pureTiU2T, 600, 925, g.by, g.ty);
+    vertex(TiU2px, TiU2py);
     
     // pb3: TiU2 to e2 (liquidus)
-    beginShape();
-    for(let x = pureTiU2x; x <= e2x; x += 0.01) {
+    for(let x = pureTiU2x; x <= e2x; x += 0.005) {
         let T = phaseBoundary(pureTiU2x, pureTiU2T, e2x, e2T, x);
         let px = map(x, 0, 1, g.lx, g.rx);
         let py = map(T, 600, 925, g.by, g.ty);
         vertex(px, py);
     }
-    endShape();
+    // Ensure e2 point is exact
+    let e2px = map(e2x, 0, 1, g.lx, g.rx);
+    let e2py = map(e2T, 600, 925, g.by, g.ty);
+    vertex(e2px, e2py);
     
     // pb4: e2 to U solid (liquidus from U)
-    beginShape();
-    for(let x = e2x; x <= 1; x += 0.01) {
+    for(let x = e2x; x <= 1; x += 0.005) {
         let T = phaseBoundary(e2x, e2T, 1, pureUT, x);
         let px = map(x, 0, 1, g.lx, g.rx);
         let py = map(T, 600, 925, g.by, g.ty);
@@ -91,21 +98,27 @@ function drawPhaseDiagram() {
     }
     endShape();
     
-    // pb5: Horizontal line at e1T from Ti to TiU2
-    let e1Ty = map(e1T, 600, 925, g.by, g.ty);
-    line(g.lx, e1Ty, map(pureTiU2x, 0, 1, g.lx, g.rx), e1Ty);
+    // pb5: Horizontal line at e1T from Ti to TiU2 - ensuring exact connection
+    strokeWeight(2);
+    line(g.lx, e1py, TiU2px, e1py);
     
-    // pb6: Horizontal line at e2T from TiU2 to U
-    let e2Ty = map(e2T, 600, 925, g.by, g.ty);
-    line(map(pureTiU2x, 0, 1, g.lx, g.rx), e2Ty, g.rx, e2Ty);
+    // pb6: Horizontal line at e2T from TiU2 to U - ensuring exact connection
+    line(TiU2px, e2py, g.rx, e2py);
     
-    // pb7: Vertical line from bottom to TiU2 compound point
-    let TiU2x = map(pureTiU2x, 0, 1, g.lx, g.rx);
-    let TiU2y = map(pureTiU2T, 600, 925, g.by, g.ty);
-    line(TiU2x, g.by, TiU2x, TiU2y);
+    // pb7: Vertical line from bottom to TiU2 compound point - ensuring exact connection
+    line(TiU2px, g.by, TiU2px, TiU2py);
     
     // Draw axis labels and tick marks
     drawAxes();
+    
+    // Title above the phase diagram
+    push();
+    noStroke();
+    fill(0);
+    textSize(16);
+    textAlign(CENTER, BASELINE);
+    text("phase diagram", (g.lx + g.rx) / 2, g.ty - 15);
+    pop();
     
     pop();
 }
@@ -113,7 +126,7 @@ function drawPhaseDiagram() {
 function drawAxes() {
     push();
     
-    // Y-axis tick marks and labels
+    // Y-axis (temperature) - major tick marks and labels from 600 to 925
     strokeWeight(1);
     stroke(0);
     let yLabels = ['600', '650', '700', '750', '800', '850', '900'];
@@ -125,13 +138,25 @@ function drawAxes() {
         
         push();
         noStroke();
-        textSize(12);
+        fill(0);
+        textSize(14);
         textAlign(RIGHT, CENTER);
-        text(yLabels[i], g.lx - 10, y);
+        text(yLabels[i], g.lx - 5, y);  // Reduced from -10 to -5
         pop();
     }
     
-    // X-axis tick marks and labels
+    // Y-axis minor ticks (4 between each major tick = every 10°C)
+    strokeWeight(0.5);
+    for(let T = 600; T <= 925; T += 10) {
+        if(T % 50 !== 0) { // Skip major ticks
+            let y = map(T, 600, 925, g.by, g.ty);
+            line(g.lx, y, g.lx + 4, y);
+            line(g.rx, y, g.rx - 4, y);
+        }
+    }
+    
+    // X-axis (mole fraction) - major tick marks and labels
+    strokeWeight(1);
     let xLabels = ['0.0', '0.2', '0.4', '0.6', '0.8', '1.0'];
     for(let i = 0; i <= 5; i++) {
         let x = i * 0.2;
@@ -141,24 +166,51 @@ function drawAxes() {
         
         push();
         noStroke();
-        textSize(12);
+        fill(0);
+        textSize(14);
         textAlign(CENTER, TOP);
-        text(xLabels[i], px, g.by + 10);
+        text(xLabels[i], px, g.by + 5);  // Reduced from +10 to +5
         pop();
     }
     
-    // Axis labels
-    noStroke();
-    textSize(16);
-    textAlign(CENTER);
-    text('mole fraction uranium x_U', (g.lx + g.rx) / 2, g.by + 35);
+    // X-axis minor ticks (3 between each major tick)
+    strokeWeight(0.5);
+    for(let i = 0; i <= 5; i++) {
+        for(let j = 1; j <= 3; j++) {
+            let x = i * 0.2 + j * 0.05;
+            if(x <= 1.0) {
+                let px = map(x, 0, 1, g.lx, g.rx);
+                line(px, g.by, px, g.by - 4);
+                line(px, g.ty, px, g.ty + 4);
+            }
+        }
+    }
     
-    push();
-    translate(g.lx - 45, (g.ty + g.by) / 2);
-    rotate(-PI / 2);
-    text('temperature (°C)', 0, 0);
     pop();
     
+    // Axis labels (draw after pop to ensure they're on top)
+    push();
+    noStroke();
+    fill(0);
+    textSize(18);
+    textAlign(CENTER, BASELINE);
+    // Draw "mole fraction uranium x" and subscript "U"
+    let xPos = (g.lx + g.rx) / 2;
+    let yPos = g.by + 40;  // Adjusted from 45 to 40
+    text('mole fraction uranium x', xPos - 5, yPos);
+    textSize(14);
+    textAlign(LEFT, BASELINE);
+    text('U', xPos + 88, yPos + 8);  // Subscript: positioned lower for proper subscript appearance
+    pop();
+    
+    push();
+    noStroke();
+    fill(0);
+    textSize(18);
+    translate(g.lx - 40, (g.ty + g.by) / 2);  // Moved right from -50 to -40
+    rotate(-PI / 2);
+    textAlign(CENTER, BASELINE);
+    text('temperature (°C)', 0, 0);
     pop();
 }
 
@@ -194,7 +246,7 @@ function drawPhasePoint() {
             ellipse(x1, y1, 2 * g.radius);
         }
         
-        if(phaseInfo.phase2 === "TiU2") {
+        if(phaseInfo.phase1 === "TiU2" || phaseInfo.phase2 === "TiU2") {
             drawingContext.setLineDash([5, 5]);
             strokeWeight(2);
             stroke(g.solidTiU2);
@@ -232,7 +284,7 @@ function drawPhasePoint() {
             ellipse(x2, y2, 2 * g.radius);
         }
         
-        if(phaseInfo.phase1 === "Liquid") {
+        if(phaseInfo.phase1 === "Liquid" || phaseInfo.phase2 === "Liquid") {
             drawingContext.setLineDash([5, 5]);
             strokeWeight(2);
             stroke(g.liquid);
@@ -256,7 +308,7 @@ function drawPhasePoint() {
     noStroke();
     if(phaseInfo.type === "single-phase") {
         if(phaseInfo.phase1 === "Liquid") {
-            fill(g.liquid);
+            fill(g.pointColor);  // Dark purple for liquid
         } else if(phaseInfo.phase1 === "Ti") {
             fill(g.solidTi);
         } else if(phaseInfo.phase1 === "TiU2") {
@@ -265,19 +317,15 @@ function drawPhasePoint() {
             fill(g.solidU);
         }
     } else {
-        fill(150, 0, 150); // Purple for two-phase
+        fill(g.pointColor); // Dark purple for two-phase
     }
     ellipse(px, py, 2 * g.radius);
     
-    // Draw dotted line from point down
-    if(phaseInfo.type === "single-phase" || phaseInfo.type === "two-phase") {
+    // Draw vertical dotted line only for single-phase liquid region
+    if(phaseInfo.type === "single-phase" && phaseInfo.phase1 === "Liquid") {
         drawingContext.setLineDash([2, 6]);
         strokeWeight(1.5);
-        if(phaseInfo.type === "single-phase" && phaseInfo.phase1 === "Liquid") {
-            stroke(g.liquid);
-        } else {
-            stroke(g.liquid);
-        }
+        stroke(g.pointColor);  // Dark purple
         line(px, py, px, g.by);
     }
     
@@ -368,10 +416,12 @@ function drawBarChart() {
     let phaseAmounts = calculatePhaseAmounts(g.pointX, g.pointT);
     
     // Bar chart position (right side)
-    let barX = g.rx + 20;
-    let barY = g.by - 40;
-    let barWidth = 35;
-    let barHeight = 300;
+    let barX = g.rx + 40;  // Left edge of bar chart
+    let barY = g.by;
+    let barGap = 5;  // Small gap between bars
+    let barWidth = 35;  // Width of each bar
+    let barHeight = 450;  // Height matches phase diagram
+    let frameWidth = barWidth * 4 + barGap * 3;  // 4 bars + 3 gaps = 155
     
     push();
     
@@ -379,55 +429,128 @@ function drawBarChart() {
     strokeWeight(1);
     stroke(0);
     noFill();
-    rect(barX, barY - barHeight, barWidth * 4 + 15, barHeight);
+    rect(barX, barY - barHeight, frameWidth, barHeight);
     
-    // Draw bars
+    // Draw bars - positioned to fit perfectly within frame with equal gaps
     strokeWeight(0.5);
     
-    // Liquid (red)
+    // Liquid (pinkish)
     fill(g.liquid);
-    rect(barX + 5, barY, barWidth, -phaseAmounts.liquid * barHeight);
+    rect(barX, barY, barWidth, -phaseAmounts.liquid * barHeight);
     
-    // Ti(s) (blue)
+    // Ti(s) (darker blue)
     fill(g.solidTi);
-    rect(barX + barWidth + 10, barY, barWidth, -phaseAmounts.Ti * barHeight);
+    rect(barX + barWidth + barGap, barY, barWidth, -phaseAmounts.Ti * barHeight);
     
-    // TiU2(s) (green)
+    // TiU2(s) (darker green)
     fill(g.solidTiU2);
-    rect(barX + 2 * barWidth + 15, barY, barWidth, -phaseAmounts.TiU2 * barHeight);
+    rect(barX + 2 * (barWidth + barGap), barY, barWidth, -phaseAmounts.TiU2 * barHeight);
     
     // U(s) (brown)
     fill(g.solidU);
-    rect(barX + 3 * barWidth + 20, barY, barWidth, -phaseAmounts.U * barHeight);
+    rect(barX + 3 * (barWidth + barGap), barY, barWidth, -phaseAmounts.U * barHeight);
+    
+    // Y-axis major tick marks and labels
+    strokeWeight(1);
+    stroke(0);
+    noFill();
+    for(let i = 0; i <= 5; i++) {
+        let val = i * 0.2;
+        let y = barY - val * barHeight;
+        // Major tick marks
+        line(barX, y, barX - 7, y);
+        line(barX + frameWidth, y, barX + frameWidth + 7, y);
+    }
+    
+    // Y-axis minor tick marks (3 between each major)
+    strokeWeight(0.5);
+    for(let i = 0; i < 5; i++) {
+        for(let j = 1; j <= 3; j++) {
+            let val = i * 0.2 + j * 0.05;
+            let y = barY - val * barHeight;
+            line(barX, y, barX - 4, y);
+            line(barX + frameWidth, y, barX + frameWidth + 4, y);
+        }
+    }
     
     // Y-axis labels
     noStroke();
     fill(0);
-    textSize(11);
+    textSize(13);  // Increased from 11 to 13
     textAlign(RIGHT, CENTER);
     for(let i = 0; i <= 5; i++) {
         let val = i * 0.2;
         let y = barY - val * barHeight;
-        text(val.toFixed(1), barX - 5, y);
+        text(val.toFixed(1), barX - 10, y);
     }
     
-    // Labels below bars
-    textSize(11);
-    textAlign(CENTER, TOP);
-    text("liquid", barX + barWidth / 2 + 5, barY + 5);
-    text("Ti(s)", barX + barWidth + barWidth / 2 + 10, barY + 5);
-    text("TiU₂(s)", barX + 2 * barWidth + barWidth / 2 + 15, barY + 5);
-    text("U(s)", barX + 3 * barWidth + barWidth / 2 + 20, barY + 5);
+    // Title - aligned with phase diagram title
+    push();
+    noStroke();
+    fill(0);
+    textSize(16);
+    textAlign(CENTER, BASELINE);
+    text("relative amounts", barX + frameWidth / 2, g.ty - 15);
+    pop();
     
-    // Title
+    // Labels below bars - vertical (rotated 90 degrees, reading downward from axis)
+    textSize(16);  // Increased from 13 to 15
+    textAlign(LEFT, CENTER);  // LEFT alignment so text extends downward after rotation
+    
+    // Liquid label
+    push();
+    translate(barX + barWidth / 2, barY + 50);
+    rotate(-PI / 2);
+    text("liquid", 0, 0);
+    pop();
+    
+    // Ti(s) label - split into Ti and subscript (s)
+    push();
+    translate(barX + barWidth + barGap + barWidth / 2, barY + 40);
+    rotate(-PI / 2);
+    textSize(16);
+    textAlign(LEFT, CENTER);
+    text("Ti", 0, 0);
     textSize(14);
-    textAlign(CENTER);
-    text("relative amounts", barX + (barWidth * 4 + 15) / 2, g.ty + 15);
+    textAlign(LEFT, TOP);
+    text("(s)", 14, 2);  // Subscript: x moves along text direction, y moves perpendicular (subscript shift)
+    pop();
     
-    // Display liquid composition if present
+    // TiU₂(s) label - split into TiU₂ and subscript (s)
+    push();
+    translate(barX + 2 * (barWidth + barGap) + barWidth / 2, barY + 60);
+    rotate(-PI / 2);
+    textSize(16);
+    textAlign(LEFT, CENTER);
+    text("TiU₂", 0, 0);
+    textSize(14);
+    textAlign(LEFT, TOP);
+    text("(s)", 33, 2);  // Subscript: x moves along text direction, y moves perpendicular (subscript shift)
+    pop();
+    
+    // U label (removed (s))
+    push();
+    translate(barX + 3 * (barWidth + barGap) + barWidth / 2, barY + 25);
+    rotate(-PI / 2);
+    text("U", 0, 0);
+    pop();
+    
+    // Display liquid composition on top of liquid bar if present
     if(phaseAmounts.liquid > 0 && phaseAmounts.liquidComp !== undefined) {
-        textSize(12);
-        text("x_U = " + phaseAmounts.liquidComp.toFixed(2), barX + (barWidth * 4 + 15) / 2, barY - barHeight - 15);
+        let liquidBarTop = barY - phaseAmounts.liquid * barHeight;
+        // Constrain position to never go above bar chart top edge
+        let labelY = Math.max(liquidBarTop - 8, barY - barHeight + 18);
+        // Position to the left of bar center
+        let labelX = barX + barWidth / 2 - 10;
+        textSize(14);
+        textAlign(CENTER, BASELINE);
+        // Draw "x" and subscript "U" with "= value"
+        text("x", labelX, labelY);
+        textSize(11);
+        textAlign(LEFT, BASELINE);
+        text("U", labelX + 4, labelY + 4);
+        textSize(14);
+        text(" = " + phaseAmounts.liquidComp.toFixed(2), labelX + 10, labelY);
     }
     
     pop();
